@@ -3,6 +3,11 @@
 <launch>
     <arg name="use_rviz" default="false" />
 
+    <!-- for amcl -->    
+    <arg name="init_x" default="0.0" />
+    <arg name="init_y" default="0.0" />
+    <arg name="init_a" default="0.0" />
+
     <!-- Map server -->
     <node name="map_server" pkg="map_server" type="map_server" args="$(find hypha_racecar)/map/test/map.yaml"/>
 
@@ -30,16 +35,23 @@
 
     <!-- Localization -->
     <!-- AMCL -->
-    <include file="$(find hypha_racecar)/launch/includes/hypha_amcl.launch.xml"/>
+    <include file="$(find hypha_racecar)/launch/includes/hypha_amcl.launch.xml">
+        <arg name="init_x" value="$(arg init_x)"/>
+        <arg name="init_y" value="$(arg init_y)"/>
+        <arg name="init_a" value="$(arg init_a)"/>
+    </include>
 
     <!-- Navstack -->
-    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-        <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"/>      
-        <rosparam file="$(find hypha_racecar)/param/costmap_common_params.yaml" command="load" ns="global_costmap"/>
-        <rosparam file="$(find hypha_racecar)/param/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base">
+        <!-- local planner -->
+        <!--        
+        <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"/>  
+        <rosparam file="$(find hypha_racecar)/param/dwa_local_planner_params.yaml" command="load"/>
+        -->
+        <!-- costmap layers -->    
         <rosparam file="$(find hypha_racecar)/param/local_costmap_params.yaml" command="load"/>
         <rosparam file="$(find hypha_racecar)/param/global_costmap_params.yaml" command="load"/> 
-        <rosparam file="$(find hypha_racecar)/param/dwa_local_planner_params.yaml" command="load"/>
+        <!-- move_base params -->
         <rosparam file="$(find hypha_racecar)/param/move_base_params.yaml" command="load"/>
         <remap from="/odom" to="/odometry/filtered"/>
     </node>
